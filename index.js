@@ -63,15 +63,18 @@ class ChessGamePiece {
     }
 }
 class AlphaBetaPruningTreeNode {
-    constructor() {
+    constructor(parent) {
         this.alpha = -Infinity;
         this.beta = Infinity;
         this.currentBoardsPiecesPositions = [[]];
         this.boardsPiecesPositionsRepresentedByThisNode = [[]];
         this.depthAtWhichThisNodeFindsITself = 0; //We will 
         this.subtreeDepth = 5;
-        this.parent = new AlphaBetaPruningTreeNode();
         this.children = [];
+        this.calculateChildren = () => {
+            //We will calculate possible moves from this point on by the adversary which will be represented as children nodes to this node 
+        };
         this.evaluationFunction = () => { };
+        this.parent = parent;
     }
 }

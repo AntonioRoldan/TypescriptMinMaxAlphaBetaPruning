@@ -89,8 +89,14 @@ class AlphaBetaPruningTreeNode {
     boardsPiecesPositionsRepresentedByThisNode: IGameBoardPiece[][] = [[]] 
     depthAtWhichThisNodeFindsITself: number = 0 //We will 
     subtreeDepth: number = 5 
-    parent: AlphaBetaPruningTreeNode = new AlphaBetaPruningTreeNode()
+    parent: AlphaBetaPruningTreeNode 
     children: AlphaBetaPruningTreeNode[] = []
+    calculateChildren = () => {
+        //We will calculate possible moves from this point on by the adversary which will be represented as children nodes to this node 
+    }
     evaluationFunction = () => {}
+    constructor(parent: AlphaBetaPruningTreeNode) {
+        this.parent = parent
+    }
 }
 
