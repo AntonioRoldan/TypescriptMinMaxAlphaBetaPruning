@@ -93,6 +93,10 @@ class AlphaBetaPruningTreeNode {
     children: AlphaBetaPruningTreeNode[] = []
     calculateChildren = () => {
         //We will calculate possible moves from this point on by the adversary which will be represented as children nodes to this node 
+        //We will do this by iterating through the board checking piece by piece of white type if it is the whites' turn or black type if it is the blacks' turn and calculating possible moves for that piece
+        //using the piece's calculatePossibleMovesOnBoard method then we will check if the piecesPositionsAfterPossibleMovesOnBoardWereMade property 
+        //for the IGameBoardPiece is empty if so we don't add children but if it is we add each one of its elements which are boards with the possible moves being made by this specific piece then 
+        //the loop will continue on to the next piece 
     }
     evaluationFunction = () => {}
     constructor(parent: AlphaBetaPruningTreeNode) {
