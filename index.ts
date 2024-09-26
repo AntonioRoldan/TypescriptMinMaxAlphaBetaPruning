@@ -16,7 +16,8 @@ enum BoardPieceType {
     bishop,
     knight,
     rook,
-    pawn
+    pawn,
+    none
 
     //Add other games 
 }
@@ -27,8 +28,8 @@ interface IGameBoardPiece {
     boardPiecePositionRow: number
     boardPiecePositionColumn: number
     currentBoardPiecesPositions: IGameBoardPiece [][]
-    possibleMovesOnBoard: IGameBoardPiece [][][]
-    calculateMovesOnBoard: () => {}
+    piecesPositionsAfterPossibleMovesOnBoardWereMade: IGameBoardPiece [][][]
+    calculatePossibleMovesOnBoard: () => void
 }
 
 class ChessGamePiece implements IGameBoardPiece{
@@ -39,18 +40,31 @@ class ChessGamePiece implements IGameBoardPiece{
     currentBoardPiecesPositions: IGameBoardPiece[][]
     checkIfMoveBelongingToThisPieceTypeCanBeDone = (stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => {
         if(stateOfTheBoardSquareWhereWeCanMove === this.boardPieceSideOrEmpty) { //We are checking if we clash with a piece of our own making this move in which case we cannot make it 
-            return false 
-        } else {
+            return false //If it is black and our current element is black... or white and our current element is white... these variables should be equal. Bear in mind we will never check empty with empty if anything it may be black or white with empty but never empty with empty or empty with black or white 
+        } else { //Because we only run this code for pieces that have a black or white type assigned to the boardPieceType variable 
             return true 
         }
     }
-    piecesPositionsAfterPossibleMovesOnBoard: IGameBoardPiece[][][] //
+    getResultingBoardPiecePositionsWithAGivenPossibleMove = (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) => {
+        var piecePositionBeforeMoveRow = this.boardPiecePositionRow
+        var piecePositionBeforeMoveColumn = this.boardPiecePositionColumn
+        var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions))
+        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiece(BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
+        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionAfterMoveRow][piecePositionAfterMoveColumn] = new ChessGamePiece(this.boardPieceSideOrEmpty, this.boardPieceType, piecePositionAfterMoveRow, piecePositionAfterMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
+        return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade
+    }
+    piecesPositionsAfterPossibleMovesOnBoardWereMade: IGameBoardPiece[][][] = [[[]]]//
     calculatePossibleMovesOnBoard = () => {
-        var piecesPositionsOnBoardAfterThisMoveIsMade: IGameBoardPiece [][] = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions)) // We make a copy of current board which we can modify for it to be added to piecesPositionsAfterPossibleMovesOnBoard  
+        var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
         switch (this.boardPieceType){
             case BoardPieceType.king: {
-                if(this.checkIfMoveBelongingToThisPieceTypeCanBeDone(this.currentBoardPiecesPositions[this.boardPiecePositionRow][this.boardPiecePositionColumn + 1].boardPieceSideOrEmpty)) {// If we can move to the right 
-                    this.piecesPositionsAfterPossibleMovesOnBoard.push()
+                if(this.checkIfMoveBelongingToThisPieceTypeCanBeDone(this.currentBoardPiecesPositions[this.boardPiecePositionRow][this.boardPiecePositionColumn + 1].boardPieceSideOrEmpty)) {// If we can move king one step to the right without stumbling upon a piece of its same color on the square we are moving to
+                    piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove(this.boardPiecePositionRow, this.boardPiecePositionColumn + 1)
+                    this.piecesPositionsAfterPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
+                }
+                if(this.checkIfMoveBelongingToThisPieceTypeCanBeDone(this.currentBoardPiecesPositions[this.boardPiecePositionRow][this.boardPiecePositionColumn - 1].boardPieceSideOrEmpty)) { //// If we can move king one step to the left without stumbling upon a piece of its same color on the square we are moving to
+                    piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove(this.boardPiecePositionRow, this.boardPiecePositionColumn - 1)
+                    this.piecesPositionsAfterPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
                 }
                 break;
             } 
@@ -60,7 +74,7 @@ class ChessGamePiece implements IGameBoardPiece{
                 break;
         }
     } //This function will give us new nodes for our tree and will fill the possibleMovesOnBoard array 
-    constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.pawn, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]]) {
+    constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]]) {
         this.boardPieceSideOrEmpty = boardPiecesSideOrEmpty
         this.boardPieceType = boardPieceType
         this.boardPiecePositionRow = boardPiecePositionRow
