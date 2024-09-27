@@ -69,7 +69,7 @@ class ChessGamePiece {
             piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove();
             this.piecesPositionsIfPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade);
         };
-        this.moveKing = () => {
+        this.calculateKingsPossibleMoves = () => {
             //TODO: Write this function 
             this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + 1; //First we check for a one step move in a downwards direction
             this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn;
@@ -79,12 +79,12 @@ class ChessGamePiece {
             }
         };
         this.piecesPositionsIfPossibleMovesOnBoardWereMade = [[[]]]; //
-        this.calculatePossibleMovesOnBoard = () => {
+        this.calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
             var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = [[]];
             switch (this.boardPieceType) {
                 case BoardPieceType.king: {
                     //If we can move the king one step downwards... 
-                    this.moveKing();
+                    this.calculateKingsPossibleMoves();
                     break;
                 }
                 default:

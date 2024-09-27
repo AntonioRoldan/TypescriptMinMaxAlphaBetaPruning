@@ -35,7 +35,7 @@ interface IGameBoardPiece {
     moveIsValid: () => boolean
     checkIfMoveGoesBeyondTheEdgesOfTheBoard: () => boolean
     calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard: () => void 
-    calculatePossibleMovesOnBoard: () => void
+    calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs: () => void
 }
 
 class ChessGamePiece implements IGameBoardPiece{
@@ -89,7 +89,7 @@ class ChessGamePiece implements IGameBoardPiece{
         this.piecesPositionsIfPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade)
 
     }
-    moveKing = () => {
+    calculateKingsPossibleMoves = () => {
         //TODO: Write this function 
         this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + 1 //First we check for a one step move in a downwards direction
         this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn
@@ -99,12 +99,12 @@ class ChessGamePiece implements IGameBoardPiece{
         }
     }
     piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPiece[][][] = [[[]]]//
-    calculatePossibleMovesOnBoard = () => {
+    calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
         var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
         switch (this.boardPieceType){
             case BoardPieceType.king: {
                 //If we can move the king one step downwards... 
-                this.moveKing()
+                this.calculateKingsPossibleMoves()
                 break;
             } 
                 
