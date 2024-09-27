@@ -22,8 +22,8 @@ class ChessGamePiece {
     constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]]) {
         this.boardPiecePositionIfMoveWereMadeRow = 0;
         this.boardPiecePositionIfMoveWereMadeColumn = 0;
-        this.moveIsValid = (piecePositionAfterMoveRow, piecePositionAfterMoveColumn, stateOfTheBoardSquareWhereWeCanMove) => {
-            if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard(piecePositionAfterMoveRow, piecePositionAfterMoveColumn) && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide(stateOfTheBoardSquareWhereWeCanMove)) {
+        this.moveIsValid = (stateOfTheBoardSquareWhereWeCanMove) => {
+            if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide(stateOfTheBoardSquareWhereWeCanMove)) {
                 return true;
             }
             else {
@@ -38,17 +38,17 @@ class ChessGamePiece {
                 return false;
             }
         };
-        this.checkIfMoveGoesBeyondTheEdgesOfTheBoard = (piecePositionAfterMoveRow, piecePositionAfterMoveColumn) => {
-            if (piecePositionAfterMoveRow > 7) { //If we cross the bottom board edge as we move downwards 
+        this.checkIfMoveGoesBeyondTheEdgesOfTheBoard = () => {
+            if (this.boardPiecePositionIfMoveWereMadeRow > 7) { //If we cross the bottom board edge as we move downwards 
                 return true;
             }
-            else if (piecePositionAfterMoveRow < 0) { //If we cross the top board edge as we move upwards
+            else if (this.boardPiecePositionIfMoveWereMadeRow < 0) { //If we cross the top board edge as we move upwards
                 return true;
             }
-            else if (piecePositionAfterMoveColumn > 7) { //If we cross the right board edge as we move to the right 
+            else if (this.boardPiecePositionIfMoveWereMadeColumn > 7) { //If we cross the right board edge as we move to the right 
                 return true;
             }
-            else if (piecePositionAfterMoveColumn < 0) { //If we cross the left board edge as we move to the left 
+            else if (this.boardPiecePositionIfMoveWereMadeColumn < 0) { //If we cross the left board edge as we move to the left 
                 return true;
             }
             else {
@@ -79,7 +79,7 @@ class ChessGamePiece {
             switch (this.boardPieceType) {
                 case BoardPieceType.king: {
                     //If we can move the king one step downwards... 
-                    if (this.moveIsValid(this.boardPiecePositionRow + 1, this.boardPiecePositionColumn, this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty)) {
+                    if (this.moveIsValid(this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty)) {
                         //Then store the combination of pieces positions on the board if we could make this move (Each combination is a different child to given parent node which is also a combination... and so the tree goes on)
                         this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard();
                     }

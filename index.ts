@@ -31,9 +31,9 @@ interface IGameBoardPiece {
     boardPiecePositionIfMoveWereMadeColumn: number
     currentBoardPiecesPositions: IGameBoardPiece [][]
     piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPiece [][][]
-    moveIsValid: (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number, stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => boolean
-    checkIfMoveGoesBeyondTheEdgesOfTheBoard: (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) => boolean
-    calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard: (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) => void 
+    moveIsValid: (stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => boolean
+    checkIfMoveGoesBeyondTheEdgesOfTheBoard: () => boolean
+    calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard: () => void 
     calculatePossibleMovesOnBoard: () => void
 }
 
@@ -45,8 +45,8 @@ class ChessGamePiece implements IGameBoardPiece{
     boardPiecePositionRow: number
     boardPiecePositionColumn: number
     currentBoardPiecesPositions: IGameBoardPiece[][]
-    moveIsValid = (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number, stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => {
-        if(!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard(piecePositionAfterMoveRow, piecePositionAfterMoveColumn) && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide(stateOfTheBoardSquareWhereWeCanMove)) {
+    moveIsValid = (stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => {
+        if(!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide(stateOfTheBoardSquareWhereWeCanMove)) {
             return true 
         } else {
             return false 
@@ -60,14 +60,14 @@ class ChessGamePiece implements IGameBoardPiece{
         }
         
     }
-    checkIfMoveGoesBeyondTheEdgesOfTheBoard = (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) : boolean  => { //We check if this possible move would go beyond any of the board's bottom top right or left edges 
-        if(piecePositionAfterMoveRow > 7){ //If we cross the bottom board edge as we move downwards 
+    checkIfMoveGoesBeyondTheEdgesOfTheBoard = () : boolean  => { //We check if this possible move would go beyond any of the board's bottom top right or left edges 
+        if(this.boardPiecePositionIfMoveWereMadeRow > 7){ //If we cross the bottom board edge as we move downwards 
             return true 
-        } else if(piecePositionAfterMoveRow < 0) { //If we cross the top board edge as we move upwards
+        } else if(this.boardPiecePositionIfMoveWereMadeRow < 0) { //If we cross the top board edge as we move upwards
             return true 
-        } else if(piecePositionAfterMoveColumn > 7){ //If we cross the right board edge as we move to the right 
+        } else if(this.boardPiecePositionIfMoveWereMadeColumn > 7){ //If we cross the right board edge as we move to the right 
             return true 
-        } else if(piecePositionAfterMoveColumn < 0){ //If we cross the left board edge as we move to the left 
+        } else if(this.boardPiecePositionIfMoveWereMadeColumn < 0){ //If we cross the left board edge as we move to the left 
             return true  
         } else {
             return false
@@ -98,7 +98,7 @@ class ChessGamePiece implements IGameBoardPiece{
         switch (this.boardPieceType){
             case BoardPieceType.king: {
                 //If we can move the king one step downwards... 
-                if(this.moveIsValid(this.boardPiecePositionRow + 1, this.boardPiecePositionColumn, this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty)) {
+                if(this.moveIsValid(this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty)) {
                     //Then store the combination of pieces positions on the board if we could make this move (Each combination is a different child to given parent node which is also a combination... and so the tree goes on)
                     this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard()
                 }
