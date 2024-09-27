@@ -20,18 +20,19 @@ var BoardPieceType;
 })(BoardPieceType || (BoardPieceType = {}));
 class ChessGamePiece {
     constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]]) {
+        this.stateOfTheBoardSquareWhereWeCanMove = BoardPieceSideOrEmpty.emptySquare;
         this.boardPiecePositionIfMoveWereMadeRow = 0;
         this.boardPiecePositionIfMoveWereMadeColumn = 0;
-        this.moveIsValid = (stateOfTheBoardSquareWhereWeCanMove) => {
-            if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide(stateOfTheBoardSquareWhereWeCanMove)) {
+        this.moveIsValid = () => {
+            if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide()) {
                 return true;
             }
             else {
                 return false;
             }
         };
-        this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide = (stateOfTheBoardSquareWhereWeCanMove) => {
-            if (stateOfTheBoardSquareWhereWeCanMove === this.boardPieceSideOrEmpty) { //We are checking if we clash with a piece of our own as we make this move in which case we cannot make it 
+        this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide = () => {
+            if (this.stateOfTheBoardSquareWhereWeCanMove === this.boardPieceSideOrEmpty) { //We are checking if we clash with a piece of our own as we make this move in which case we cannot make it 
                 return true; //If it is black and our current element is black... or white and our current element is white... (these variables equal only when there is a clash). Because we will never check empty with empty if anything it may be black or white with empty but never empty with empty or empty with black or white 
             }
             else { //Because we only run this code for pieces that have a black or white type assigned to the boardPieceType variable 
@@ -72,6 +73,10 @@ class ChessGamePiece {
             //TODO: Write this function 
             this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + 1; //First we check for a one step move in a downwards direction
             this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn;
+            this.stateOfTheBoardSquareWhereWeCanMove = this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty; //We see if there are pieces on the square we can move to if so whether they are black or white. We are also checking if the square is empty
+            if (this.moveIsValid()) {
+                this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard;
+            }
         };
         this.piecesPositionsIfPossibleMovesOnBoardWereMade = [[[]]]; //
         this.calculatePossibleMovesOnBoard = () => {
@@ -79,10 +84,7 @@ class ChessGamePiece {
             switch (this.boardPieceType) {
                 case BoardPieceType.king: {
                     //If we can move the king one step downwards... 
-                    if (this.moveIsValid(this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty)) {
-                        //Then store the combination of pieces positions on the board if we could make this move (Each combination is a different child to given parent node which is also a combination... and so the tree goes on)
-                        this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard();
-                    }
+                    this.moveKing();
                     break;
                 }
                 default:
