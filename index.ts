@@ -27,44 +27,80 @@ interface IGameBoardPiece {
     boardPieceType: BoardPieceType 
     boardPiecePositionRow: number
     boardPiecePositionColumn: number
+    boardPiecePositionIfMoveWereMadeRow: number
+    boardPiecePositionIfMoveWereMadeColumn: number
     currentBoardPiecesPositions: IGameBoardPiece [][]
-    piecesPositionsAfterPossibleMovesOnBoardWereMade: IGameBoardPiece [][][]
+    piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPiece [][][]
+    moveIsValid: (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number, stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => boolean
+    checkIfMoveGoesBeyondTheEdgesOfTheBoard: (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) => boolean
+    calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard: (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) => void 
     calculatePossibleMovesOnBoard: () => void
 }
 
 class ChessGamePiece implements IGameBoardPiece{
     boardPieceSideOrEmpty: BoardPieceSideOrEmpty
     boardPieceType: BoardPieceType
+    boardPiecePositionIfMoveWereMadeRow: number = 0
+    boardPiecePositionIfMoveWereMadeColumn: number = 0
     boardPiecePositionRow: number
     boardPiecePositionColumn: number
     currentBoardPiecesPositions: IGameBoardPiece[][]
-    checkIfMoveBelongingToThisPieceTypeCanBeDone = (stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => {
-        if(stateOfTheBoardSquareWhereWeCanMove === this.boardPieceSideOrEmpty) { //We are checking if we clash with a piece of our own making this move in which case we cannot make it 
-            return false //If it is black and our current element is black... or white and our current element is white... these variables should be equal. Bear in mind we will never check empty with empty if anything it may be black or white with empty but never empty with empty or empty with black or white 
-        } else { //Because we only run this code for pieces that have a black or white type assigned to the boardPieceType variable 
+    moveIsValid = (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number, stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => {
+        if(!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard(piecePositionAfterMoveRow, piecePositionAfterMoveColumn) && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide(stateOfTheBoardSquareWhereWeCanMove)) {
             return true 
+        } else {
+            return false 
         }
     }
-    getResultingBoardPiecePositionsWithAGivenPossibleMove = (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) => {
+    checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide = (stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty) => { //Parameter tells us if the square where we can move has a black piece, a white piece or is empty
+        if(stateOfTheBoardSquareWhereWeCanMove === this.boardPieceSideOrEmpty) { //We are checking if we clash with a piece of our own as we make this move in which case we cannot make it 
+            return true //If it is black and our current element is black... or white and our current element is white... (these variables equal only when there is a clash). Because we will never check empty with empty if anything it may be black or white with empty but never empty with empty or empty with black or white 
+        } else { //Because we only run this code for pieces that have a black or white type assigned to the boardPieceType variable 
+            return false 
+        }
+        
+    }
+    checkIfMoveGoesBeyondTheEdgesOfTheBoard = (piecePositionAfterMoveRow: number, piecePositionAfterMoveColumn: number) : boolean  => { //We check if this possible move would go beyond any of the board's bottom top right or left edges 
+        if(piecePositionAfterMoveRow > 7){ //If we cross the bottom board edge as we move downwards 
+            return true 
+        } else if(piecePositionAfterMoveRow < 0) { //If we cross the top board edge as we move upwards
+            return true 
+        } else if(piecePositionAfterMoveColumn > 7){ //If we cross the right board edge as we move to the right 
+            return true 
+        } else if(piecePositionAfterMoveColumn < 0){ //If we cross the left board edge as we move to the left 
+            return true  
+        } else {
+            return false
+        } //Note: The queen, knight and bishop could go beyond the edge diagonally through the corners but such case is covered too by these conditionals 
+    }
+    getResultingBoardPiecePositionsWithAGivenPossibleMove = () => {
         var piecePositionBeforeMoveRow = this.boardPiecePositionRow
         var piecePositionBeforeMoveColumn = this.boardPiecePositionColumn
         var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions))
         piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiece(BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
-        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionAfterMoveRow][piecePositionAfterMoveColumn] = new ChessGamePiece(this.boardPieceSideOrEmpty, this.boardPieceType, piecePositionAfterMoveRow, piecePositionAfterMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
+        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiece(this.boardPieceSideOrEmpty, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
         return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade
     }
-    piecesPositionsAfterPossibleMovesOnBoardWereMade: IGameBoardPiece[][][] = [[[]]]//
+    calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard = () => {
+        var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
+        piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove()
+        this.piecesPositionsIfPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade)
+
+    }
+    moveKing = () => {
+        //TODO: Write this function 
+        this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + 1 //First we check for a one step move in a downwards direction
+        this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn
+    }
+    piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPiece[][][] = [[[]]]//
     calculatePossibleMovesOnBoard = () => {
-        var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
+        var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
         switch (this.boardPieceType){
             case BoardPieceType.king: {
-                if(this.checkIfMoveBelongingToThisPieceTypeCanBeDone(this.currentBoardPiecesPositions[this.boardPiecePositionRow][this.boardPiecePositionColumn + 1].boardPieceSideOrEmpty)) {// If we can move king one step to the right without stumbling upon a piece of its same color on the square we are moving to
-                    piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove(this.boardPiecePositionRow, this.boardPiecePositionColumn + 1)
-                    this.piecesPositionsAfterPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
-                }
-                if(this.checkIfMoveBelongingToThisPieceTypeCanBeDone(this.currentBoardPiecesPositions[this.boardPiecePositionRow][this.boardPiecePositionColumn - 1].boardPieceSideOrEmpty)) { //// If we can move king one step to the left without stumbling upon a piece of its same color on the square we are moving to
-                    piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove(this.boardPiecePositionRow, this.boardPiecePositionColumn - 1)
-                    this.piecesPositionsAfterPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
+                //If we can move the king one step downwards... 
+                if(this.moveIsValid(this.boardPiecePositionRow + 1, this.boardPiecePositionColumn, this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty)) {
+                    //Then store the combination of pieces positions on the board if we could make this move (Each combination is a different child to given parent node which is also a combination... and so the tree goes on)
+                    this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard()
                 }
                 break;
             } 
