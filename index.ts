@@ -94,12 +94,14 @@ class ChessGamePiece implements IGameBoardPiece{
         this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + 1 //First we check for a one step move in a downwards direction
         this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn
         this.stateOfTheBoardSquareWhereWeCanMove = this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty //We see if there are pieces on the square we can move to if so whether they are black or white. We are also checking if the square is empty
-        if(this.moveIsValid()) {
-            this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard
+        if(this.moveIsValid()) { //Note these functions have no parameters because they are using the class properties we are setting right above this conditional statement 
+            this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard()
         }
     }
     piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPiece[][][] = [[[]]]//
     calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
+        //We are going to calculate possible moves AND store their resulting pieces' positions' combinations in the piecesPositionsIfPossibleMovesOnBoardWereMade array 
+        //This array will take all the board position combinations resulting from possible moves and be used to add children to a given node in our alpha beta pruning tree 
         var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
         switch (this.boardPieceType){
             case BoardPieceType.king: {
