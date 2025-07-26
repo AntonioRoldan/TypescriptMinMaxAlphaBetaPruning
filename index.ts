@@ -1,5 +1,5 @@
 
-
+// https://www.youtube.com/watch?v=_i-lZcbWkps video explaining the algorithm although here we have to add more features so it can apply to a proper chess game (for example we have to allow for a swap between the two opposing sides of a game with its respective change in turn for the player and computer )
 
 var boardsPiecesPositions: IGameBoardPiece[][] = [[]]
 
