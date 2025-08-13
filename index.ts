@@ -28,6 +28,8 @@ interface IGameBoardPossibleMovesForAGivenPieceCalculator {
     boardPieceSideOrEmpty: BoardPieceSideOrEmpty
     boardPieceType: BoardPieceType 
     opposingSidesBoardPieceColor: BoardPieceSideOrEmpty
+    checkIfSpecialMoveAppliesIGameBoardPieceArgument: any
+    checkIfSpecialMoveAppliesIGameBoardPieceArguments: {argument: any}[] //One argument for each piece type, we will iterate through this array and do one check in a single code block
     stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty
     boardPiecePositionRow: number
     boardPiecePositionColumn: number
@@ -44,11 +46,23 @@ interface IGameBoardPossibleMovesForAGivenPieceCalculator {
 interface IGameBoardPiece {
     arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition: {row: number, column: number}[] //Array of hashmaps, each hashmap has two keys, one for row and another for column. This array will store each possible move for this piece 
     specialMoves: {row: number, column: number}[] 
+    checkIfSpecialMoveApplies: (arg: any) => boolean 
 }
 
 class King implements IGameBoardPiece {
-    arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition: { row: number; column: number }[] = [{row: 1, column: 0}, {row:0, column:1}, {row: -1, column:0}, {row:0, column:-1}] //For moving without attacking 
-    specialMoves: { row: number; column: number }[] = [{row: 1, column: 1}, {row:1, column: -1}, {row:-1, column: -1}, {row:-1, column:1}] //For attacking a piece 
+    arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition: { row: number; column: number }[] = [{row: 1, column: 0}, {row:0, column:1}, {row: -1, column:0}, {row:0, column:-1}, {row: 1, column: 1}, {row:1, column: -1}, {row:-1, column: -1}, {row:-1, column:1}] //For moving without attacking 
+    specialMoves: { row: number; column: number }[] = [] //For attacking a piece 
+    checkIfSpecialMoveApplies: (arg: any) => boolean = () => { 
+        return false 
+    }
+}
+
+class Pawn implements IGameBoardPiece {
+    arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition: { row: number; column: number }[] = [{row: 1, column: 0}]
+    specialMoves: { row: number; column: number }[] = [{row: 1, column: 1}, {row:1, column: -1}]
+    checkIfSpecialMoveApplies: (arg: any) => boolean = (isTargetRowAndColumnForThisMoveTakenByAnOpposingSidesPiece: boolean) => {
+        return isTargetRowAndColumnForThisMoveTakenByAnOpposingSidesPiece
+    }
 }
 
 class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardPossibleMovesForAGivenPieceCalculator{
@@ -56,6 +70,8 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
     boardPieceSideOrEmpty: BoardPieceSideOrEmpty
     opposingSidesBoardPieceColor: BoardPieceSideOrEmpty
     boardPieceType: BoardPieceType
+    checkIfSpecialMoveAppliesIGameBoardPieceArgument: any
+    checkIfSpecialMoveAppliesIGameBoardPieceArguments: {boardPieceType: BoardPieceType, argument: any}[] = [{boardPieceType: BoardPieceType.pawn, argument: false}]//One argument for each piece type, we will iterate through this array and do one check in a single code block
     stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty = BoardPieceSideOrEmpty.emptySquare
     boardPiecePositionIfMoveWereMadeRow: number = 0
     boardPiecePositionIfMoveWereMadeColumn: number = 0
@@ -79,6 +95,12 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
         }
         
     }
+    checkIfASpecialMoveApplies = () => {
+        if(this.stateOfTheBoardSquareWhereWeCanMove === this.opposingSidesBoardPieceColor) { // If we are attacking 
+            return true 
+        }
+        return false 
+    }
     checkIfMoveGoesBeyondTheEdgesOfTheBoard = () : boolean  => { //We check if this possible move would go beyond any of the board's bottom top right or left edges 
         if(this.boardPiecePositionIfMoveWereMadeRow > 7){ //If we cross the bottom board edge as we move downwards 
             return true 
@@ -97,7 +119,7 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
         var piecePositionBeforeMoveColumn = this.boardPiecePositionColumn
         var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions))
         piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(BoardPieceSideOrEmpty.emptySquare, BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece) //We empty the square where the piece is now 
-        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(this.boardPieceSideOrEmpty, this.opposingSidesBoardPieceColor, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece) //And move the piece to the new position, note how we pass the board from the exact previous line since our new board will have the current row and column for this piece empty because we are making a move thus changing pieces' position
+        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(this.boardPieceSideOrEmpty, this.opposingSidesBoardPieceColor, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece) //And move the piece to the new position, note how we pass the board from the exact previous line since our new board will have the current row and column for this piece empty because we are making a move thus changing pieces' position, the boardPiecePositionIfMoveWereMade arguments for both row and column that we are passing (note they are two arguments) represent the piece move along with the piece type 
         return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade
     }
     calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard = () => {
@@ -112,15 +134,38 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
     calculateSinglePossibleMove = (nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough: number) => { // This parameter is the gameBoardPiece array storing possible moves for a the gameBoardPiece as hashmaps of the amount of rows and columns it goes through from a starting position for a given move 
 
         this.stateOfTheBoardSquareWhereWeCanMove = this.currentBoardPiecesPositions[this.boardPiecePositionRow + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].row][this.boardPiecePositionColumn + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].column].boardPieceSideOrEmpty //We see if there are pieces on the square we can move to if so whether they are black or white. We are also checking if the square is empty
+        this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].row 
+        this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].column
         if(this.moveIsValid()) { //Note these functions have no parameters because they are using the class properties we are setting right above this conditional statement 
+            
+            this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard()
+        }
+    }
+    checkIfSingleSpecialMoveAppliesDependingOnPieceType = () => {
+        for(let pieceTypeIndexInCheckIfSpecialMoveAppliesIGameBoardPieceArguments = 0; pieceTypeIndexInCheckIfSpecialMoveAppliesIGameBoardPieceArguments < this.checkIfSpecialMoveAppliesIGameBoardPieceArguments.length; pieceTypeIndexInCheckIfSpecialMoveAppliesIGameBoardPieceArguments++){
+            if(this.boardPieceType === this.checkIfSpecialMoveAppliesIGameBoardPieceArguments[pieceTypeIndexInCheckIfSpecialMoveAppliesIGameBoardPieceArguments].boardPieceType){
+                this.checkIfSpecialMoveAppliesIGameBoardPieceArgument = this.checkIfSpecialMoveAppliesIGameBoardPieceArguments[pieceTypeIndexInCheckIfSpecialMoveAppliesIGameBoardPieceArguments].argument
+            }
+        }
+        return this.gameBoardPiece.checkIfSpecialMoveApplies(this.checkIfSpecialMoveAppliesIGameBoardPieceArgument)
+    }
+    calculateSingleSpecialPossibleMove = (nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough: number) => {
+        this.stateOfTheBoardSquareWhereWeCanMove = this.currentBoardPiecesPositions[this.boardPiecePositionRow + this.gameBoardPiece.specialMoves[nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].row][this.boardPiecePositionColumn + this.gameBoardPiece.specialMoves[nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].column].boardPieceSideOrEmpty //We see if there are pieces on the square we can move to if so whether they are black or white. We are also checking if the square is empty
+        this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + this.gameBoardPiece.specialMoves[nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].row
+        this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn+ this.gameBoardPiece.specialMoves[nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].column
+        if(this.checkIfSingleSpecialMoveAppliesDependingOnPieceType()){
             this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard()
         }
     }
     calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece = () => {
+        //First we calculate possible moves 
         for(let nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough = 0; nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough < this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition.length; nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough++){
             this.calculateSinglePossibleMove(nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough)
         }
-    }
+        //Next special moves, for example the pawn moves diagonally one step when attacking an opponent's piece 
+        for(let nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough = 0; nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough < this.gameBoardPiece.specialMoves.length; nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough++)
+            this.calculateSingleSpecialPossibleMove(nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough)
+        }
     calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
         //We should calculate possible moves by all pieces on the board of a given turn's side 
         this.calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece()
@@ -131,6 +176,7 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
         this.gameBoardPiece = gameBoardPiece
         this.boardPieceSideOrEmpty = boardPiecesSideOrEmpty
         this.opposingSidesBoardPieceColor = opposingSidesBoardPieceColor
+        this.checkIfSpecialMoveAppliesIGameBoardPieceArguments = [{boardPieceType: BoardPieceType.pawn, argument: this.stateOfTheBoardSquareWhereWeCanMove === this.opposingSidesBoardPieceColor}]//One argument for each piece type, we will iterate through this array and do one check in a single code block
         this.boardPieceType = boardPieceType
         this.boardPiecePositionRow = boardPiecePositionRow
         this.boardPiecePositionColumn = boardPiecePositionColumn
