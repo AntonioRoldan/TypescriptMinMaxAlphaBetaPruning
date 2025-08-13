@@ -85,6 +85,9 @@ class ChessGamePiece implements IGameBoardPiece{
         return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade
     }
     calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard = () => {
+         //We are going to calculate possible moves AND store their resulting pieces' positions' combinations in the piecesPositionsIfPossibleMovesOnBoardWereMade array 
+        //This array will take all the board position combinations resulting from possible moves and be used to add children to a given node in our alpha beta pruning tree 
+        //It will also be stored in the piecesPositionsIfPossibleMovesOnBoardWereMade array as a 2D array representing board positions for each piece after a move is made 
         var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
         piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove()
         this.piecesPositionsIfPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade)
@@ -100,9 +103,7 @@ class ChessGamePiece implements IGameBoardPiece{
         }
     }
     calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
-        //We are going to calculate possible moves AND store their resulting pieces' positions' combinations in the piecesPositionsIfPossibleMovesOnBoardWereMade array 
-        //This array will take all the board position combinations resulting from possible moves and be used to add children to a given node in our alpha beta pruning tree 
-        var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade: IGameBoardPiece [][] = [[]] 
+    
         switch (this.boardPieceType){
             case BoardPieceType.king: {
                 //If we can move the king one step downwards... 
