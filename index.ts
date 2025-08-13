@@ -3,7 +3,7 @@
 
 var boardsPiecesPositions: IGameBoardPiece[][] = [[]]
 
-enum BoardPieceSideOrEmpty{ //It represents the color of a given piece or whether it is an empty square which is a piece type we will use for empty squares on the board
+enum BoardPieceSideOrEmpty{ //It represents the color of a given piece in a given square or whether it is an empty square which is a piece type we will use for empty squares on the board
     black,
     white,
     emptySquare
@@ -47,6 +47,7 @@ class ChessGamePiece implements IGameBoardPiece{
     boardPiecePositionRow: number
     boardPiecePositionColumn: number
     currentBoardPiecesPositions: IGameBoardPiece[][]
+    piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPiece[][][] = [[[]]]//An array storing one 2D array for each set of positions after each possible move is made by this piece 
     moveIsValid = () => {
         if(!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide()) {
             return true 
@@ -79,8 +80,8 @@ class ChessGamePiece implements IGameBoardPiece{
         var piecePositionBeforeMoveRow = this.boardPiecePositionRow
         var piecePositionBeforeMoveColumn = this.boardPiecePositionColumn
         var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions))
-        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiece(BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
-        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiece(this.boardPieceSideOrEmpty, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade)
+        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiece(BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade) //We empty the square where the piece is now 
+        piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiece(this.boardPieceSideOrEmpty, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade) //And move the piece to the new position
         return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade
     }
     calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard = () => {
@@ -98,7 +99,6 @@ class ChessGamePiece implements IGameBoardPiece{
             this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard()
         }
     }
-    piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPiece[][][] = [[[]]]//
     calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
         //We are going to calculate possible moves AND store their resulting pieces' positions' combinations in the piecesPositionsIfPossibleMovesOnBoardWereMade array 
         //This array will take all the board position combinations resulting from possible moves and be used to add children to a given node in our alpha beta pruning tree 
