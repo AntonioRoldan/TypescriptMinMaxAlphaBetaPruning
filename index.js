@@ -1,4 +1,5 @@
 "use strict";
+// https://www.youtube.com/watch?v=_i-lZcbWkps video explaining the algorithm although here we have to add more features so it can apply to a proper chess game (for example we have to allow for a swap between the two opposing sides of a game with its respective change in turn for the player and computer )
 var boardsPiecesPositions = [[]];
 var BoardPieceSideOrEmpty;
 (function (BoardPieceSideOrEmpty) {
@@ -18,11 +19,13 @@ var BoardPieceType;
     BoardPieceType[BoardPieceType["none"] = 6] = "none";
     //Add other games 
 })(BoardPieceType || (BoardPieceType = {}));
-class ChessGamePiece {
-    constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]]) {
+class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
+    //This function will give us new nodes for our tree and will fill the possibleMovesOnBoard array 
+    constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]], gameBoardPiece) {
         this.stateOfTheBoardSquareWhereWeCanMove = BoardPieceSideOrEmpty.emptySquare;
         this.boardPiecePositionIfMoveWereMadeRow = 0;
         this.boardPiecePositionIfMoveWereMadeColumn = 0;
+        this.piecesPositionsIfPossibleMovesOnBoardWereMade = [[[]]]; //An array storing one 2D array for each set of positions after each possible move is made by this piece 
         this.moveIsValid = () => {
             if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide()) {
                 return true;
@@ -60,37 +63,33 @@ class ChessGamePiece {
             var piecePositionBeforeMoveRow = this.boardPiecePositionRow;
             var piecePositionBeforeMoveColumn = this.boardPiecePositionColumn;
             var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions));
-            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiece(BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade);
-            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiece(this.boardPieceSideOrEmpty, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade);
+            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //We empty the square where the piece is now 
+            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(this.boardPieceSideOrEmpty, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //And move the piece to the new position
             return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade;
         };
         this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard = () => {
+            //We are going to calculate possible moves AND store their resulting pieces' positions' combinations in the piecesPositionsIfPossibleMovesOnBoardWereMade array 
+            //This array will take all the board position combinations resulting from possible moves and be used to add children to a given node in our alpha beta pruning tree 
+            //It will also be stored in the piecesPositionsIfPossibleMovesOnBoardWereMade array as a 2D array representing board positions for each piece after a move is made 
             var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = [[]];
             piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove();
             this.piecesPositionsIfPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade);
         };
-        this.calculateKingsPossibleMoves = () => {
-            //TODO: Write this function 
-            this.boardPiecePositionIfMoveWereMadeRow = this.boardPiecePositionRow + 1; //First we check for a one step move in a downwards direction
-            this.boardPiecePositionIfMoveWereMadeColumn = this.boardPiecePositionColumn;
-            this.stateOfTheBoardSquareWhereWeCanMove = this.currentBoardPiecesPositions[this.boardPiecePositionRow + 1][this.boardPiecePositionColumn].boardPieceSideOrEmpty; //We see if there are pieces on the square we can move to if so whether they are black or white. We are also checking if the square is empty
-            if (this.moveIsValid()) {
-                this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard;
+        this.calculateSinglePossibleMove = (nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough) => {
+            this.stateOfTheBoardSquareWhereWeCanMove = this.currentBoardPiecesPositions[this.boardPiecePositionRow + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].row][this.boardPiecePositionColumn + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].column].boardPieceSideOrEmpty; //We see if there are pieces on the square we can move to if so whether they are black or white. We are also checking if the square is empty
+            if (this.moveIsValid()) { //Note these functions have no parameters because they are using the class properties we are setting right above this conditional statement 
+                this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard();
             }
         };
-        this.piecesPositionsIfPossibleMovesOnBoardWereMade = [[[]]]; //
-        this.calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
-            var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = [[]];
-            switch (this.boardPieceType) {
-                case BoardPieceType.king: {
-                    //If we can move the king one step downwards... 
-                    this.calculateKingsPossibleMoves();
-                    break;
-                }
-                default:
-                    break;
+        this.calculatePossibleMoves = () => {
+            //TODO: Write this function 
+            for (let i = 0; i < this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition.length; i++) {
+                this.calculateSinglePossibleMove(i);
             }
-        }; //This function will give us new nodes for our tree and will fill the possibleMovesOnBoard array 
+        };
+        this.calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
+        };
+        this.gameBoardPiece = gameBoardPiece;
         this.boardPieceSideOrEmpty = boardPiecesSideOrEmpty;
         this.boardPieceType = boardPieceType;
         this.boardPiecePositionRow = boardPiecePositionRow;
