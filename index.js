@@ -19,22 +19,28 @@ var BoardPieceType;
     BoardPieceType[BoardPieceType["none"] = 6] = "none";
     //Add other games 
 })(BoardPieceType || (BoardPieceType = {}));
+class King {
+    constructor() {
+        this.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition = [{ row: 1, column: 0 }, { row: 0, column: 1 }, { row: -1, column: 0 }, { row: 0, column: -1 }]; //For moving without attacking 
+        this.specialMoves = [{ row: 1, column: 1 }, { row: 1, column: -1 }, { row: -1, column: -1 }, { row: -1, column: 1 }]; //For attacking a piece 
+    }
+}
 class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
     //This function will give us new nodes for our tree and will fill the possibleMovesOnBoard array 
-    constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]], gameBoardPiece) {
+    constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, opposingSidesBoardPieceColor = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]], gameBoardPiece) {
         this.stateOfTheBoardSquareWhereWeCanMove = BoardPieceSideOrEmpty.emptySquare;
         this.boardPiecePositionIfMoveWereMadeRow = 0;
         this.boardPiecePositionIfMoveWereMadeColumn = 0;
         this.piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade = [[[]]]; //An array storing one 2D array for each set of positions after each possible move is made by this piece 
         this.moveIsValid = () => {
-            if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide()) {
+            if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAnotherPiece()) {
                 return true;
             }
             else {
                 return false;
             }
         };
-        this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide = () => {
+        this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAnotherPiece = () => {
             if (this.stateOfTheBoardSquareWhereWeCanMove === this.boardPieceSideOrEmpty) { //We are checking if we clash with a piece of our own as we make this move in which case we cannot make it 
                 return true; //If it is black and our current element is black... or white and our current element is white... (these variables equal only when there is a clash). Because we will never check empty with empty if anything it may be black or white with empty but never empty with empty or empty with black or white 
             }
@@ -63,8 +69,8 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
             var piecePositionBeforeMoveRow = this.boardPiecePositionRow;
             var piecePositionBeforeMoveColumn = this.boardPiecePositionColumn;
             var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions));
-            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //We empty the square where the piece is now 
-            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(this.boardPieceSideOrEmpty, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //And move the piece to the new position
+            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(BoardPieceSideOrEmpty.emptySquare, BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //We empty the square where the piece is now 
+            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(this.boardPieceSideOrEmpty, this.opposingSidesBoardPieceColor, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //And move the piece to the new position, note how we pass the board from the exact previous line since our new board will have the current row and column for this piece empty because we are making a move thus changing pieces' position
             return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade;
         };
         this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard = () => {
@@ -92,6 +98,7 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
         };
         this.gameBoardPiece = gameBoardPiece;
         this.boardPieceSideOrEmpty = boardPiecesSideOrEmpty;
+        this.opposingSidesBoardPieceColor = opposingSidesBoardPieceColor;
         this.boardPieceType = boardPieceType;
         this.boardPiecePositionRow = boardPiecePositionRow;
         this.boardPiecePositionColumn = boardPiecePositionColumn;
