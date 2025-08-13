@@ -61,12 +61,6 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
                 return false;
             }
         };
-        this.checkIfASpecialMoveApplies = () => {
-            if (this.stateOfTheBoardSquareWhereWeCanMove === this.opposingSidesBoardPieceColor) { // If we are attacking 
-                return true;
-            }
-            return false;
-        };
         this.checkIfMoveGoesBeyondTheEdgesOfTheBoard = () => {
             if (this.boardPiecePositionIfMoveWereMadeRow > 7) { //If we cross the bottom board edge as we move downwards 
                 return true;
@@ -88,8 +82,8 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
             var piecePositionBeforeMoveRow = this.boardPiecePositionRow;
             var piecePositionBeforeMoveColumn = this.boardPiecePositionColumn;
             var piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = JSON.parse(JSON.stringify(this.currentBoardPiecesPositions));
-            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[piecePositionBeforeMoveRow][piecePositionBeforeMoveColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(BoardPieceSideOrEmpty.emptySquare, BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //We empty the square where the piece is now 
-            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade[this.boardPiecePositionIfMoveWereMadeRow][this.boardPiecePositionIfMoveWereMadeColumn] = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(this.boardPieceSideOrEmpty, this.opposingSidesBoardPieceColor, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //And move the piece to the new position, note how we pass the board from the exact previous line since our new board will have the current row and column for this piece empty because we are making a move thus changing pieces' position, the boardPiecePositionIfMoveWereMade arguments for both row and column that we are passing (note they are two arguments) represent the piece move along with the piece type 
+            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(BoardPieceSideOrEmpty.emptySquare, BoardPieceSideOrEmpty.emptySquare, BoardPieceType.none, piecePositionBeforeMoveRow, piecePositionBeforeMoveColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //We empty the square where the piece is now 
+            piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade = new ChessGamePiecePossibleMovesForAGivenPieceCalculator(this.boardPieceSideOrEmpty, this.opposingSidesBoardPieceColor, this.boardPieceType, this.boardPiecePositionIfMoveWereMadeRow, this.boardPiecePositionIfMoveWereMadeColumn, piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade, this.gameBoardPiece); //And move the piece to the new position, note how we pass the board from the exact previous line since our new board will have the current row and column for this piece empty because we are making a move thus changing pieces' position, the boardPiecePositionIfMoveWereMade arguments for both row and column that we are passing (note they are two arguments) represent the piece move along with the piece type 
             return piecesPositionsOnBoardAfterAPossibleCalculatedMoveWereMade;
         };
         this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard = () => {
