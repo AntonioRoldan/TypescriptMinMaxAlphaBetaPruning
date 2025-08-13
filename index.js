@@ -25,7 +25,7 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
         this.stateOfTheBoardSquareWhereWeCanMove = BoardPieceSideOrEmpty.emptySquare;
         this.boardPiecePositionIfMoveWereMadeRow = 0;
         this.boardPiecePositionIfMoveWereMadeColumn = 0;
-        this.piecesPositionsIfPossibleMovesOnBoardWereMade = [[[]]]; //An array storing one 2D array for each set of positions after each possible move is made by this piece 
+        this.piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade = [[[]]]; //An array storing one 2D array for each set of positions after each possible move is made by this piece 
         this.moveIsValid = () => {
             if (!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide()) {
                 return true;
@@ -73,7 +73,7 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
             //It will also be stored in the piecesPositionsIfPossibleMovesOnBoardWereMade array as a 2D array representing board positions for each piece after a move is made 
             var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = [[]];
             piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove();
-            this.piecesPositionsIfPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade);
+            this.piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade);
         };
         this.calculateSinglePossibleMove = (nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough) => {
             this.stateOfTheBoardSquareWhereWeCanMove = this.currentBoardPiecesPositions[this.boardPiecePositionRow + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].row][this.boardPiecePositionColumn + this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition[nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough].column].boardPieceSideOrEmpty; //We see if there are pieces on the square we can move to if so whether they are black or white. We are also checking if the square is empty
@@ -81,13 +81,14 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator {
                 this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard();
             }
         };
-        this.calculatePossibleMoves = () => {
-            //TODO: Write this function 
-            for (let i = 0; i < this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition.length; i++) {
-                this.calculateSinglePossibleMove(i);
+        this.calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece = () => {
+            for (let nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough = 0; nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough < this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition.length; nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough++) {
+                this.calculateSinglePossibleMove(nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough);
             }
         };
         this.calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
+            //We should calculate possible moves by all pieces on the board of a given turn's side 
+            this.calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece();
         };
         this.gameBoardPiece = gameBoardPiece;
         this.boardPieceSideOrEmpty = boardPiecesSideOrEmpty;

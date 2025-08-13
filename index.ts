@@ -33,7 +33,7 @@ interface IGameBoardPossibleMovesForAGivenPieceCalculator {
     boardPiecePositionIfMoveWereMadeRow: number
     boardPiecePositionIfMoveWereMadeColumn: number
     currentBoardPiecesPositions: IGameBoardPossibleMovesForAGivenPieceCalculator [][]
-    piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPossibleMovesForAGivenPieceCalculator [][][]
+    piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade: IGameBoardPossibleMovesForAGivenPieceCalculator [][][]
     moveIsValid: () => boolean
     checkIfMoveGoesBeyondTheEdgesOfTheBoard: () => boolean
     calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard: () => void 
@@ -54,7 +54,7 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
     boardPiecePositionRow: number
     boardPiecePositionColumn: number
     currentBoardPiecesPositions: IGameBoardPossibleMovesForAGivenPieceCalculator[][]
-    piecesPositionsIfPossibleMovesOnBoardWereMade: IGameBoardPossibleMovesForAGivenPieceCalculator[][][] = [[[]]]//An array storing one 2D array for each set of positions after each possible move is made by this piece 
+    piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade: IGameBoardPossibleMovesForAGivenPieceCalculator[][][] = [[[]]]//An array storing one 2D array for each set of positions after each possible move is made by this piece 
     moveIsValid = () => {
         if(!this.checkIfMoveGoesBeyondTheEdgesOfTheBoard() && !this.checkIfMoveBelongingToThisPieceMakesPieceClashWithAPieceFromTheSameSide()) {
             return true 
@@ -97,7 +97,7 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
         //It will also be stored in the piecesPositionsIfPossibleMovesOnBoardWereMade array as a 2D array representing board positions for each piece after a move is made 
         var piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade: IGameBoardPossibleMovesForAGivenPieceCalculator [][] = [[]] 
         piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade = this.getResultingBoardPiecePositionsWithAGivenPossibleMove()
-        this.piecesPositionsIfPossibleMovesOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade)
+        this.piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade.push(piecesPositionsOnBoardIfAPossibleCalculatedMoveWereMade)
 
     }
     calculateSinglePossibleMove = (nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough: number) => { // This parameter is the gameBoardPiece array storing possible moves for a the gameBoardPiece as hashmaps of the amount of rows and columns it goes through from a starting position for a given move 
@@ -107,16 +107,15 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
             this.calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard()
         }
     }
-    calculatePossibleMoves = () => {
-        //TODO: Write this function 
-
-        for(let i = 0; i < this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition.length; i++){
-            this.calculateSinglePossibleMove(i)
+    calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece = () => {
+        for(let nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough = 0; nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough < this.gameBoardPiece.arrayOfCharacteristicMovesAsHashMapsInTermsOfRowAndColumnDifferenceWithRegardsToCurrentPiecePosition.length; nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough++){
+            this.calculateSinglePossibleMove(nthPossibleMoveInTermsAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough)
         }
     }
     calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
-    
-        }
+        //We should calculate possible moves by all pieces on the board of a given turn's side 
+        this.calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece()
+    }
     //This function will give us new nodes for our tree and will fill the possibleMovesOnBoard array 
     constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, boardPieceType = BoardPieceType.none, boardPiecePositionRow = 0, boardPiecePositionColumn = 0, currentBoardsPiecesPositions = [[]], gameBoardPiece: IGameBoardPiece) {
         this.gameBoardPiece = gameBoardPiece
