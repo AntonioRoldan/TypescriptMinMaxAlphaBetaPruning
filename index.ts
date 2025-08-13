@@ -23,12 +23,12 @@ enum BoardPieceType {
 }
 
 
-interface IGameBoardPossibleMovesForEachPieceCalculator {
-    gameBoardPiece: IGameBoardPiece
-    boardPieceSideOrEmpty: BoardPieceSideOrEmpty
-    boardPieceType: BoardPieceType 
-    opposingSidesBoardPieceColor: BoardPieceSideOrEmpty
-    checkIfSpecialMoveAppliesIGameBoardPieceArgument: any
+interface IGameBoardPossibleMovesForEachPieceCalculator { //AlphaBetaPruningTreeNode will have a 2D array of the game board dimensions and in whose each coordinates there will be an instance of this class with a piece type. Each instance will store an array with the exact same contents as this parent 2D array that will be added manually by the programmer at the beginning of the main program
+    gameBoardPiece: IGameBoardPiece                       //This only has to be set for the starting point from then on the calculatePossibleMovesOnBoardByThisPieceFromThisSideWhoseTurnInTheGameIs function will give us a 3d array of 2d arrays (OF THE SAME TYPE AS THE 2D ARRAYS MENTIONED SO FAR) with the new generated boards each of which will correspond to a board with a possible move by a each piece of a given side in the original 2d array that we mention on the line right above (the first 2D array mentioned in this comment on the line right above, which is the parent 2D array)
+    boardPieceSideOrEmpty: BoardPieceSideOrEmpty          //The alpha beta pruning tree node wiil, after calling the calculatePossibleMovesOnBoardByThisPieceFromThisSideWhoseTurnInTheGameIs function for each class instance, iterate through the function's output stored in the piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade variable for each instance we iterate through on the parent 2d array, remember RIGHT AFTER each 
+    boardPieceType: BoardPieceType                        //calculatePossibleMovesOnBoardByThisPieceFromThisSideWhoseTurnInTheGameIs function call corresponding the instance we are iterating through on the parent 2d array; then take each of these outputs from the calculatePossibleMovesOnBoardByThisPieceFromThisSideWhoseTurnInTheGameIs function call (remember one call for each instance of this class stored in the first 2D array we mention at the beginning of  this comment), an output by the way which is stored in the class' instance's piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade variable and store it in a single array representing the node's children
+    opposingSidesBoardPieceColor: BoardPieceSideOrEmpty   //With each child storing a single piecesPositionsIfAllPossibleMovesByEachPieceTypeOnBoardWereMade's element which is a 2d array OF EXACT SAME TYPE AS THE PARENT ARRAY (the first 2d array mentioned in the comment) output WRAPPED in another AlphaBetaPruningTreeNode class' instance, specifically in the AlphaBetaPruningTreeNode class' currentBoardsPiecesPositions variable. 
+    checkIfSpecialMoveAppliesIGameBoardPieceArgument: any //This process will be repeated a number of times equal to our desired tree depth. 
     checkIfSpecialMoveAppliesIGameBoardPieceArguments: {argument: any}[] //One argument for each piece type, we will iterate through this array and do one check in a single code block
     stateOfTheBoardSquareWhereWeCanMove: BoardPieceSideOrEmpty
     boardPiecePositionRow: number
@@ -40,7 +40,7 @@ interface IGameBoardPossibleMovesForEachPieceCalculator {
     moveIsValid: () => boolean
     checkIfMoveGoesBeyondTheEdgesOfTheBoard: () => boolean
     calculateSinglePossibleMoveOnBoardAndStoreItsResultingPiecesPositionsCombinationsOnBoard: () => void 
-    calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs: () => void
+    calculatePossibleMovesOnBoardByThisPieceFromThisSideWhoseTurnInTheGameIs: () => void
 }
 
 interface IGameBoardPiece {
@@ -160,11 +160,9 @@ class ChessGamePiecePossibleMovesForAGivenPieceCalculator implements IGameBoardP
         for(let nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough = 0; nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough < this.gameBoardPiece.specialMoves.length; nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough++)
             this.calculateSingleSpecialPossibleMove(nthPossibleSpecialMoveInTermsOfAmountOfColumnsAndRowsThePieceFromAStartingRowColumnPositionMovesThrough)
         }
-    calculatePossibleMovesOnBoardByEachPieceFromTheSideWhoseTurnInTheGameItIs = () => {
+    calculatePossibleMovesOnBoardByThisPieceFromThisSideWhoseTurnInTheGameIs = () => {
         //We should calculate possible moves by all pieces on the board of a given turn's side 
-        for(let pieceIndexOnBoard = 0; pieceIndexOnBoard < this.currentBoardPiecesPositions.length; pieceIndexOnBoard++){
-            this.calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece()            
-        }
+        this.calculateBoardPiecesPositionsAfterEachPossibleMoveByThisPiece()            
     }
     //This function will give us new nodes for our tree and will fill the possibleMovesOnBoard array 
     constructor(boardPiecesSideOrEmpty = BoardPieceSideOrEmpty.emptySquare, opposingSidesBoardPieceColor = BoardPieceSideOrEmpty.emptySquare,
